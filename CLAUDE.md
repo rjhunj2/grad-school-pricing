@@ -18,9 +18,11 @@ All analysis lives in a single Jupyter notebook; outputs are written back to the
 grad-school-pricing/
 ├── analysis.ipynb                                                    # main notebook — all cleaning, aggregation, charts
 │
-├── Tuition Data.xlsx                                                 # primary input; two sheets:
-│                                                                     #   - "Gross Tuition Billed to Student"
-│                                                                     #   - "Tuition Scholarship given to st"
+├── Tuition Data.xlsx                                                 # primary input; 4 sheets, 2 used by the pipeline:
+│                                                                     #   - "Gross Tuition Billed to Student"   (used)
+│                                                                     #   - "Tuition Scholarship given to st"   (used)
+│                                                                     #   - "Cheat Sheet - Programs - Term"     (reference, unused)
+│                                                                     #   - "Information Sheet"                 (reference, unused)
 ├── Multi-Year Tuition-Tuition scholarship by Program.xlsx            # multi-year view of tuition + scholarships
 ├── 2026 Bioethics Masters Tuition Rates and Degree Completion Time Summary.xlsx
 ├── Students' IDs.xlsx                                                # student ID reference
@@ -38,9 +40,9 @@ grad-school-pricing/
 2. **Clean tuition** — keep `ID`, `acad_plan`, `tuition`; coerce tuition to numeric; drop rows missing plan or amount.
 3. **Clean scholarships** — sum `fall_sch + spring_sch + summer_sch` into a single `scholarship` column per row; keep `ID`, `acad_plan`, `descr`.
 4. **Program filter** — both frames are filtered to `program_map` (see below).
-5. **Scholarship filter** — `keep_scholarship()` retains descriptions containing `"lgs"` and drops external/federal awards (`nih`, `nsf`, `grfp`, `training grant`, `yellow ribbon`, `vet`, `americorps`, `pell`, `hope`, `zell`, `woodruff scholar-grad tuition`, etc.).
+5. **Scholarship filter** — `keep_scholarship()` retains descriptions containing `"lgs"` and drops external/federal awards and generic LGS "special" awards (`nih`, `nsf`, `grfp`, `training grant`, `special-scholarship`, `yellow ribbon`, `vet`, `americorps`, `pell`, `hope`, `zell`, `woodruff scholar-grad tuition`).
 6. **Aggregate** — group to `(ID, acad_plan)` level and merge tuition with kept scholarships; unmatched scholarship rows get `0`.
-7. **Derive** — `net_tuition = tuition - scholarship`; `program` column via `program_map`.
+7. **Derive** — `net_tuition = max(tuition - scholarship, 0)` (clipped at zero — a kept scholarship occasionally exceeds billed tuition for a partial-term student; we report the student as paying $0 rather than a negative amount); `program` column via `program_map`.
 8. **International flag** — re-load scholarship sheet, mark `EU CC IPEDS == "Non US Citizen"` as `intl=1`, collapse to max per (ID, plan), merge into `df`.
 9. **Program summary** — group by `program`, compute student counts, international counts/%, avg gross/scholarship/net, totals, and `discount_rate = total_scholarship / total_gross_tuition`.
 10. **Peer benchmark** — annualize Emory gross tuition (`annual = total * 2 / term_count`), group programs into Data/CS / Economics / General, concatenate with hardcoded `peer_data` (Columbia, NYU, Georgia Tech).
@@ -58,7 +60,7 @@ grad-school-pricing/
 | DATASCIMS     | Data Science         |
 | QTMMS         | Data Science         |
 | ECONMS        | Economics            |
-| ECON4P1MS     | Economics 4+1        |
+| ECON4P1MS     | Economics            |
 | MATHMS        | Math                 |
 | BIOETHMA      | Bioethics            |
 | BIOETH4P1     | Bioethics 4+1        |
@@ -67,7 +69,9 @@ grad-school-pricing/
 | BMIDMS        | MBID                 |
 | BBS4P1MS      | Cancer Biology 4+1   |
 
-Rows with any other `acad_plan` are dropped.
+Rows with any other `acad_plan` are dropped. Small-n programs are merged into a parent bucket where appropriate (e.g. `ECONMS` + `ECON4P1MS` → "Economics", `DATASCIMS` + `QTMMS` → "Data Science") so that per-program averages are not dominated by a handful of students.
+
+Programs with no kept scholarship rows (e.g. `QTMMS`, `DATASCIMS`, `BMIDMS` in the current inputs) are **retained** in the program summary with a 0% discount rate. This is intentional — surfacing these zero-discount programs is part of the pricing analysis and flags potential discrepancies vs. programs that do give LGS aid.
 
 ## Peer Group (hardcoded)
 
