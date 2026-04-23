@@ -205,20 +205,27 @@ def chart_peer_benchmark(spl: pd.DataFrame, out: str) -> None:
 def main() -> None:
     os.makedirs("charts", exist_ok=True)
 
-    ps  = pd.read_excel("program_summary_output.xlsx")
-    spl = pd.read_excel("student_program_level_output.xlsx")
-    spy = pd.read_excel("student_program_year_output.xlsx")
+    ps      = pd.read_excel("program_summary_output.xlsx", sheet_name="program_summary")
+    ps_pric = pd.read_excel("program_summary_output.xlsx", sheet_name="pricing_summary")
+    spl     = pd.read_excel("student_program_level_output.xlsx")
+    spy     = pd.read_excel("student_program_year_output.xlsx")
+
+    # Mirrors df_pricing in analysis.ipynb: drop partial-term rows that
+    # distort discount and tuition averages. Used only for the three
+    # pricing-focused charts.
+    spl_pric = spl[spl["tuition"] >= 20000].copy()
 
     print(f"Inputs: program_summary={len(ps)} rows, "
-          f"student_program={len(spl)} rows, "
+          f"pricing_summary={len(ps_pric)} rows, "
+          f"student_program={len(spl)} rows ({len(spl_pric)} after pricing filter), "
           f"student_program_year={len(spy)} rows")
 
-    chart_discount_rate(ps,      "charts/01_discount_rate_by_program.png")
-    chart_gross_vs_net(ps,       "charts/02_avg_gross_vs_net_tuition.png")
-    chart_intl_vs_discount(ps,   "charts/03_intl_pct_vs_discount_rate.png")
-    chart_enrollment_trend(spy,  "charts/04_enrollment_trend_by_program.png")
-    chart_discount_trend(spy,    "charts/05_discount_rate_trend_by_program.png")
-    chart_peer_benchmark(spl,    "charts/06_peer_benchmark_emory_vs_peers.png")
+    chart_discount_rate(ps_pric,    "charts/01_discount_rate_by_program.png")
+    chart_gross_vs_net(ps_pric,     "charts/02_avg_gross_vs_net_tuition.png")
+    chart_intl_vs_discount(ps,      "charts/03_intl_pct_vs_discount_rate.png")
+    chart_enrollment_trend(spy,     "charts/04_enrollment_trend_by_program.png")
+    chart_discount_trend(spy,       "charts/05_discount_rate_trend_by_program.png")
+    chart_peer_benchmark(spl_pric,  "charts/06_peer_benchmark_emory_vs_peers.png")
 
 
 if __name__ == "__main__":
