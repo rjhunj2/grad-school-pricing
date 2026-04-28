@@ -39,22 +39,29 @@ REPORT_DATE = date(2026, 4, 23).strftime("%B %d, %Y")
 # ------------------------------------------------------------------
 # Content (insights keyed to each chart)
 # ------------------------------------------------------------------
-SEMESTER_SLIDE = {
-    "headline": "Per-semester billing is consistent Fall/Spring — Summer reveals MDP's heaviest discounting",
-    "subtext":  "Charts sorted by Fall gross tuition for easy cross-semester comparison. df_pricing population (gross tuition ≥ $20k).",
-    "charts":   [
-        "charts/gross_net_fall.png",
-        "charts/gross_net_spring.png",
-        "charts/gross_net_summer.png",
-    ],
-}
+SEMESTER_SUBTEXT = "df_pricing population (gross tuition ≥ $20k). Sorted by Fall gross tuition."
 
-# Standard one-chart slides. The gross-vs-net slot is built separately as a
-# left-panel + three-chart stack (see SEMESTER_SLIDE / build_three_stack_slide).
+# Each entry is either a (insight, chart_path) tuple — built with the standard
+# top-strip layout — or a {headline, subtext, chart} dict, built with a left
+# navy panel layout (used for the three per-semester slides).
 CHART_SLIDES = [
     ("Discount rates vary six-fold across programs — MDP tops the list at 55% while Data Science and MBID give nothing",
      "charts/01_discount_rate_by_program.png"),
-    None,  # slot 4 — replaced by the semester-stack slide
+    {
+        "headline": "Fall billing is tight across programs — Economics discounts most at the per-semester level",
+        "subtext":  SEMESTER_SUBTEXT,
+        "chart":    "charts/gross_net_fall.png",
+    },
+    {
+        "headline": "Spring mirrors Fall with one exception — CS 4+1 shows the largest proportional discount",
+        "subtext":  SEMESTER_SUBTEXT,
+        "chart":    "charts/gross_net_spring.png",
+    },
+    {
+        "headline": "Summer is where MDP's scholarship strategy concentrates — near-zero net on $22k gross",
+        "subtext":  SEMESTER_SUBTEXT,
+        "chart":    "charts/gross_net_summer.png",
+    },
     ("High international share doesn't come with lower aid — Computer Science is 86% international AND 49% discounted",
      "charts/03_intl_pct_vs_discount_rate.png"),
     ("Computer Science enrollment has roughly doubled since 2022 — driving nearly all of Emory's LGS master's volume growth",
@@ -101,12 +108,41 @@ REPORT_SECTIONS = [
       "give no institutional scholarship at all. The 8-year trend is broadly stable — year-over-year "
       "fluctuations sit within normal cohort noise and no program is systematically tightening aid."),
      ["charts/01_discount_rate_by_program.png", "charts/05_discount_rate_trend_by_program.png"]),
-    ("Gross vs Net Tuition",
-     ("Sticker price and net price diverge most sharply for MDP ($108k gross → $49k net) and Computer "
-      "Science ($67k → $34k). Programs with low or zero discount rates (Bioethics, Data Science, MBID) "
-      "collect close to full sticker from every full-load student. Gross-to-net gap is the clearest "
-      "single view of where Emory is spending its tuition-discount dollars."),
-     ["charts/02_avg_gross_vs_net_tuition.png"]),
+    {
+        "title": "Gross vs Net Tuition",
+        "intro": (
+            "Splitting the tuition story by semester clarifies how each program prices and aids "
+            "individual terms. Fall and Spring sit in the same range — full-load programs bill "
+            "roughly $20–24k gross per term — but Summer is sparser, more concentrated, and "
+            "reveals the heaviest discounting strategy in the portfolio. All three charts use the "
+            "df_pricing population (career-total tuition ≥ $20k) and share the same Fall-gross-"
+            "descending program order so cross-semester comparison is direct."
+        ),
+        "subsections": [
+            ("2a — Fall",
+             ("All ten programs enroll in Fall. Gross billings cluster around $20–24k, with MBID "
+              "and Data Science at the top showing zero institutional aid (gross = net). Economics "
+              "shows the largest per-semester Fall discount among high-gross programs — $24k gross "
+              "→ $16k net. Computer Science, CS 4+1, Math, and MDP each take roughly half off "
+              "through LGS aid."),
+             "charts/gross_net_fall.png"),
+            ("2b — Spring",
+             ("Spring closely mirrors Fall in both program order and gross magnitudes. The notable "
+              "exception is Computer Science 4+1, where Spring billings drop to ~$19k gross and net "
+              "falls to ~$9k — a ~52% per-semester discount, the largest proportional Spring give "
+              "in the portfolio. Computer Science shows a similar Spring drop. Bioethics 4+1 "
+              "collects nearly all of its $22k Spring sticker."),
+             "charts/gross_net_spring.png"),
+            ("2c — Summer",
+             ("Summer is structurally different — only eight of ten programs enroll students; MBID "
+              "and Economics are Fall-Spring only. The story is MDP: $22k gross → $2.3k net per "
+              "student, by far the heaviest discounting in the LGS portfolio and where the program "
+              "concentrates its scholarship spend. Cancer Biology 4+1 shows a similar pattern at "
+              "lower gross. Data Science Summer gross equals net, consistent with its 0% "
+              "institutional-aid finding portfolio-wide."),
+             "charts/gross_net_summer.png"),
+        ],
+    },
     ("International Mix",
      ("Bubble size shows program enrollment; position shows international share vs discount rate. Computer "
       "Science is the clear outlier — 86% international yet still 49% discounted. Across the portfolio there "
@@ -153,34 +189,60 @@ SPEAKER_NOTES = [
          "Bottom: Bioethics 9.5% and Bioethics 4+1 16%; Data Science and MBID at 0%.",
          "Uses the pricing filter (482 full-load students). Dropping the 11 sub-$20k rows barely moves any individual bar — the comparisons are robust to that choice — but it keeps the metric defensible.",
      ]),
-    ("Slide 4 — Avg Gross vs Net Tuition",
-     [
-         "MDP is off the top: ~$108k gross, ~$49k net — ~$60k of institutional aid per student on average.",
-         "Computer Science: ~$67k gross, ~$34k net (v2 values are ~$1k higher than the v1 deck because the filter excluded four partial-term CS rows).",
-         "Bioethics moved the most under the filter: gross $54k → $57k, net $48k → $52k, because six low-billing rows were dropped.",
-         "MBID and Data Science: gross = net; the two bars are identical.",
-     ]),
-    ("Slide 5 — International % vs Discount Rate",
+    {
+        "title": "Slide 4 — Fall: Per-Semester Gross vs Net by Program",
+        "what_to_say": [
+            "Frame this as a per-semester view, not annualized — students are billed roughly twice these amounts across Fall + Spring.",
+            "All ten programs appear in Fall. Gross billings cluster tightly in the $20–24k range; the right tail (Bioethics) sits lower at ~$14k.",
+            "Top of the chart: MBID and Data Science show gross = net — zero LGS aid in Fall, consistent with their portfolio-wide 0% discount.",
+            "Economics is the standout in Fall: $24k gross → $16k net, the largest absolute per-semester give among high-gross programs.",
+            "Computer Science, CS 4+1, Math, and MDP each show roughly half off through LGS aid in Fall.",
+        ],
+        "tip": "Open by reminding the audience that the y-axis is per-semester. The same student is billed roughly twice this amount over Fall + Spring — and for 3-term programs (MDP, Data Science) there is a Summer billing on top of that.",
+    },
+    {
+        "title": "Slide 5 — Spring: Per-Semester Gross vs Net by Program",
+        "what_to_say": [
+            "Spring closely mirrors Fall — same program order, similar gross magnitudes — except for Computer Science 4+1.",
+            "CS 4+1: Spring gross drops to ~$19k while net falls to ~$9k — a ~52% Spring discount, the largest proportional Spring give in the portfolio.",
+            "Computer Science also shows a measurable Spring softening of gross billing relative to Fall.",
+            "Bioethics 4+1 collects close to its $22k Spring sticker — the smallest Spring discount among full-load programs.",
+            "Same df_pricing filter; same Fall-descending program order to keep the eye anchored.",
+        ],
+        "tip": "If you're pressed for time you can fold Spring into Fall — the Spring chart is essentially a copy of Fall with one CS-side detail. The slide is included for completeness and because Spring is when the largest proportional CS 4+1 discount shows up.",
+    },
+    {
+        "title": "Slide 6 — Summer: Per-Semester Gross vs Net by Program",
+        "what_to_say": [
+            "Summer is structurally different: only eight programs are present. MBID and Economics are Fall-Spring only and don't appear here.",
+            "The headline: MDP. $22k gross, $2.3k net per Summer term — the heaviest discounting in the LGS portfolio.",
+            "Cancer Biology 4+1 shows a similar pattern at lower gross ($17.5k → $1.7k).",
+            "CS 4+1 is the only other program with a meaningful Summer discount; CS Summer billing drops to ~$3k for the small group that takes Summer terms.",
+            "Data Science Summer gross ≈ net, consistent with the program's 0% LGS-aid finding portfolio-wide.",
+        ],
+        "tip": "MDP is your headline number here — pause on it. $22k → $2k per Summer is dramatic and worth letting land. If asked: yes, MDP students typically take three terms per year, so this isn't a stray summer billing — it's where roughly a third of MDP's discount dollars are spent.",
+    },
+    ("Slide 7 — International % vs Discount Rate",
      [
          "Bubble size = enrollment; x = international %, y = discount rate.",
          "CS is the big navy bubble upper-right: 86% international, 49% discount, 154 students.",
          "No downward relationship between international share and aid — contradicts the intuition that international students subsidize domestic ones.",
          "Uses the full population (no pricing filter) — we don't want to undercount international students on a count-based chart.",
      ]),
-    ("Slide 6 — Enrollment Trends",
+    ("Slide 8 — Enrollment Trends",
      [
          "Full panel, AY 2019 through AY 2026, full population.",
          "Computer Science climbs from the mid-30s into the 60s — roughly doubled since 2022 — this is the main volume story.",
          "MDP steady around 30–40 per year.",
          "Smaller programs (Data Science, MBID, Economics) stay below ~10 per year throughout.",
      ]),
-    ("Slide 7 — Discount Rate Trend",
+    ("Slide 9 — Discount Rate Trend",
      [
          "By-program, year-over-year. Shapes tell you stability; no program is systematically tightening or loosening aid.",
          "MDP hovers at 55–60%. CS holds around 49%. 0%-discount programs stay flat at zero.",
          "Year-to-year wobble sits within cohort-size noise; don't over-read single-year moves.",
      ]),
-    ("Slide 8 — Peer Benchmark",
+    ("Slide 10 — Peer Benchmark",
      [
          "Emory's three program-group averages on pricing-filtered data: Data/CS $47,353, Economics $46,719, General $50,654.",
          "Columbia leads Data/CS at $64,800 and Economics at $90,732.",
@@ -189,7 +251,7 @@ SPEAKER_NOTES = [
          "Positioning: Emory is priced like a mid-tier private — well above a public flagship, well below the urban elites. That's a deliberate pricing decision, not an accident.",
          "Peer numbers are published sticker rates; Emory numbers use the pricing filter so the comparison is like-for-like against a typical full-load student.",
      ]),
-    ("Slide 9 — Data & Methodology",
+    ("Slide 11 — Data & Methodology",
      [
          "Walk through the pipeline if asked: institutional Excel exports → decode term codes → filter to LGS programs → keep institutional-only scholarships → collapse to student-program level.",
          "The sub-$20k pricing filter: 11 rows under $20,000 in total billed tuition were excluded from pricing metrics only. These are partial-term billings with ~$0 kept scholarship that distort averages.",
@@ -306,18 +368,16 @@ def build_chart_slide(prs, insight, chart_path, page_num):
              str(page_num), color=NAVY, size=11, align=PP_ALIGN.RIGHT)
 
 
-def build_three_stack_slide(prs, headline, subtext, chart_paths, page_num):
-    """Slide with a left navy panel (headline + subtext) and three charts
-    stacked vertically on the right, each taking roughly equal vertical space."""
+def build_left_panel_chart_slide(prs, headline, subtext, chart_path, page_num):
+    """Slide with a full-height left navy panel (headline + subtext) and a
+    single chart on the right, sized to fit while preserving its aspect."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     sw, sh = prs.slide_width, prs.slide_height
 
-    # Left navy panel (full height) + gold vertical accent.
     panel_w = Inches(4.5)
     add_rect(slide, 0, 0, panel_w, sh, NAVY)
     add_rect(slide, panel_w, 0, Inches(0.06), sh, GOLD)
 
-    # Headline + subtext inside the panel.
     add_text(
         slide, Inches(0.4), Inches(1.0), panel_w - Inches(0.7), Inches(4.0),
         headline, color=WHITE, size=20, bold=True, align=PP_ALIGN.LEFT,
@@ -327,23 +387,23 @@ def build_three_stack_slide(prs, headline, subtext, chart_paths, page_num):
         subtext, color=GOLD, size=13, align=PP_ALIGN.LEFT,
     )
 
-    # Right-side stack: equal vertical thirds.
+    # Right-side chart, width-fit (preserves the source PNG's 11:6 aspect ratio).
     right_x = panel_w + Inches(0.25)
     right_w = sw - right_x - Inches(0.3)
-    top_pad = Inches(0.3)
-    bot_pad = Inches(0.5)  # leaves room for page number
-    avail_h = sh - top_pad - bot_pad
-    gap = Inches(0.08)
-    chart_h = (avail_h - gap * 2) / 3
-
-    for i, path in enumerate(chart_paths):
-        slide.shapes.add_picture(
-            path,
-            left=right_x,
-            top=top_pad + (chart_h + gap) * i,
-            width=right_w,
-            height=chart_h,
-        )
+    avail_top = Inches(0.3)
+    avail_bot = Inches(0.5)
+    avail_h = sh - avail_top - avail_bot
+    # Source charts are figsize=(11, 6).
+    chart_h_natural = right_w * 6 / 11
+    if chart_h_natural <= avail_h:
+        chart_w = right_w
+        chart_h = chart_h_natural
+    else:
+        chart_h = avail_h
+        chart_w = chart_h * 11 / 6
+    chart_x = right_x + (right_w - chart_w) / 2
+    chart_y = avail_top + (avail_h - chart_h) / 2
+    slide.shapes.add_picture(chart_path, left=chart_x, top=chart_y, width=chart_w, height=chart_h)
 
     add_text(
         slide, sw - Inches(0.8), sh - Inches(0.35), Inches(0.6), Inches(0.3),
@@ -387,13 +447,9 @@ def build_pptx(path: str) -> None:
     build_title_slide(prs)
     build_exec_summary_slide(prs)
     for i, entry in enumerate(CHART_SLIDES, start=3):
-        if entry is None:
-            build_three_stack_slide(
-                prs,
-                SEMESTER_SLIDE["headline"],
-                SEMESTER_SLIDE["subtext"],
-                SEMESTER_SLIDE["charts"],
-                i,
+        if isinstance(entry, dict):
+            build_left_panel_chart_slide(
+                prs, entry["headline"], entry["subtext"], entry["chart"], i,
             )
         else:
             insight, chart = entry
@@ -484,6 +540,38 @@ def add_numbered(doc, n, headline, detail):
     rd.font.color.rgb = DocxRGB(0x22, 0x22, 0x22)
 
 
+def add_subheading(doc, text, size=11):
+    """Small inline label (e.g. 'What to say') above a bullet list."""
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = DocxPt(4)
+    p.paragraph_format.space_after = DocxPt(2)
+    run = p.add_run(text)
+    run.font.name = "Calibri"
+    run.font.size = DocxPt(size)
+    run.font.bold = True
+    run.font.color.rgb = DOCX_NAVY
+
+
+def add_tip_box(doc, text):
+    """Light-gold callout box for delivery tips."""
+    table = doc.add_table(rows=1, cols=1)
+    cell = table.cell(0, 0)
+    tcPr = cell._tc.get_or_add_tcPr()
+    tcPr.append(_shading("FFF4D6"))
+    p = cell.paragraphs[0]
+    p.paragraph_format.space_before = DocxPt(2)
+    p.paragraph_format.space_after = DocxPt(2)
+    r1 = p.add_run("TIP — ")
+    r1.font.name = "Calibri"
+    r1.font.size = DocxPt(11)
+    r1.font.bold = True
+    r1.font.color.rgb = DOCX_GOLD
+    r2 = p.add_run(text)
+    r2.font.name = "Calibri"
+    r2.font.size = DocxPt(11)
+    r2.font.color.rgb = DocxRGB(0x22, 0x22, 0x22)
+
+
 def add_bullet(doc, text):
     p = doc.add_paragraph(style="List Bullet")
     p.paragraph_format.space_after = DocxPt(4)
@@ -548,15 +636,28 @@ def build_docx(path: str) -> None:
     _page_break(doc)
 
     # ---------- Sections ----------
-    for title, narrative, charts in REPORT_SECTIONS:
-        add_heading(doc, title, size=18)
-        add_gold_rule(doc)
-        add_body(doc, narrative)
-        for chart in charts:
-            doc.add_picture(chart, width=DocxInches(6.5))
-            cap = doc.paragraphs[-1]
-            cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        _page_break(doc)
+    for entry in REPORT_SECTIONS:
+        if isinstance(entry, dict):
+            add_heading(doc, entry["title"], size=18)
+            add_gold_rule(doc)
+            add_body(doc, entry["intro"])
+            for sub_title, sub_narrative, sub_chart in entry["subsections"]:
+                add_heading(doc, sub_title, size=14)
+                add_body(doc, sub_narrative)
+                doc.add_picture(sub_chart, width=DocxInches(6.5))
+                cap = doc.paragraphs[-1]
+                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            _page_break(doc)
+        else:
+            title, narrative, charts = entry
+            add_heading(doc, title, size=18)
+            add_gold_rule(doc)
+            add_body(doc, narrative)
+            for chart in charts:
+                doc.add_picture(chart, width=DocxInches(6.5))
+                cap = doc.paragraphs[-1]
+                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            _page_break(doc)
 
     # ---------- Appendix ----------
     add_heading(doc, "Data & Methodology", size=18)
@@ -629,10 +730,18 @@ def build_speaker_notes_docx(path: str) -> None:
         "Full population retained for enrollment counts and international mix.",
     )
 
-    for slide_title, bullets in SPEAKER_NOTES:
-        add_heading(doc, slide_title, size=15)
-        for b in bullets:
-            add_bullet(doc, b)
+    for entry in SPEAKER_NOTES:
+        if isinstance(entry, dict):
+            add_heading(doc, entry["title"], size=15)
+            add_subheading(doc, "What to say")
+            for b in entry["what_to_say"]:
+                add_bullet(doc, b)
+            add_tip_box(doc, entry["tip"])
+        else:
+            slide_title, bullets = entry
+            add_heading(doc, slide_title, size=15)
+            for b in bullets:
+                add_bullet(doc, b)
         doc.add_paragraph()
 
     doc.save(path)
