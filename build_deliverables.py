@@ -33,38 +33,55 @@ DOCX_NAVY = DocxRGB(0x01, 0x21, 0x69)
 DOCX_GOLD = DocxRGB(0xF2, 0xA9, 0x00)
 
 TITLE = "LGS Master's Programs: Tuition Pricing & Scholarship Analysis"
-SUBTITLE = "Emory Laney Graduate School — Phase 2"
-REPORT_DATE = date(2026, 4, 22).strftime("%B %d, %Y")
+SUBTITLE = "Emory Laney Graduate School — Phase 2 (v2)"
+REPORT_DATE = date(2026, 4, 23).strftime("%B %d, %Y")
 
 # ------------------------------------------------------------------
 # Content (insights keyed to each chart)
 # ------------------------------------------------------------------
+SEMESTER_SLIDE = {
+    "headline": "Per-semester billing is consistent Fall/Spring — Summer reveals MDP's heaviest discounting",
+    "subtext":  "Charts sorted by Fall gross tuition for easy cross-semester comparison. df_pricing population (gross tuition ≥ $20k).",
+    "charts":   [
+        "charts/gross_net_fall.png",
+        "charts/gross_net_spring.png",
+        "charts/gross_net_summer.png",
+    ],
+}
+
+# Standard one-chart slides. The gross-vs-net slot is built separately as a
+# left-panel + three-chart stack (see SEMESTER_SLIDE / build_three_stack_slide).
 CHART_SLIDES = [
     ("Discount rates vary six-fold across programs — MDP tops the list at 55% while Data Science and MBID give nothing",
      "charts/01_discount_rate_by_program.png"),
-    ("MDP's ~$60k average discount is the biggest absolute tuition give — and its net tuition is still the highest in the portfolio",
-     "charts/02_avg_gross_vs_net_tuition.png"),
+    None,  # slot 4 — replaced by the semester-stack slide
     ("High international share doesn't come with lower aid — Computer Science is 86% international AND 49% discounted",
      "charts/03_intl_pct_vs_discount_rate.png"),
     ("Computer Science enrollment has roughly doubled since 2022 — driving nearly all of Emory's LGS master's volume growth",
      "charts/04_enrollment_trend_by_program.png"),
     ("Discount rates are broadly stable year-over-year — no program is systematically tightening aid",
      "charts/05_discount_rate_trend_by_program.png"),
-    ("Emory's annualized tuition ($47–50k) undercuts Columbia/NYU by $20–40k and sits above Georgia Tech's in-state rates — mid-market positioning",
+    ("Emory's annualized tuition ($47–51k) undercuts Columbia/NYU by $20–40k and sits above Georgia Tech's in-state rates — mid-market positioning",
      "charts/06_peer_benchmark_emory_vs_peers.png"),
 ]
 
+# v2: pricing metrics below (avg gross/net tuition, discount rate, peer
+# annualization) are computed on df_pricing — student-program rows with
+# total billed tuition of at least $20,000. This drops 11 of 493 rows
+# (partial-term or single-course billings) that were pulling the averages
+# down and compressing discount rates. Enrollment counts and
+# international-mix figures still use the full population.
 TOP5 = [
     ("MDP is Emory's costliest and most-discounted master's",
-     "$108k average gross, $49k net, 55% discount rate across 135 students over the 8-year panel ($8.4M in LGS scholarships)."),
+     "$108k average gross, $49k net, 55% discount rate across 135 full-load students over the 8-year panel ($8.4M in LGS scholarships)."),
     ("Two programs operate at 0% discount",
-     "Data Science (n=11) and MBID (n=8) show gross = net for every student. Obvious candidates for a pricing review."),
+     "Data Science (n=11) and MBID (n=8) show gross = net for every full-load student. Obvious candidates for a pricing review."),
     ("Enrollment is bimodal",
      "Computer Science (154) and MDP (135) together account for 59% of the 493-student sample; eight other programs share the remaining 41%."),
-    ("Computer Science is 86% international — and still 49% discounted",
+    ("Computer Science is 86% international — and still ~49% discounted",
      "Emory competes for these students on price as well as visa-friendliness; aid does not scale down as international share rises."),
     ("Emory sits mid-pack against peers",
-     "Annualized gross tuition ~$47–50k across Data/CS, Economics, and General buckets — below Columbia/NYU ($65–91k) and above Georgia Tech's in-state rates ($31–41k)."),
+     "Annualized gross tuition ~$47–51k across Data/CS, Economics, and General buckets — below Columbia/NYU ($65–91k) and above Georgia Tech's in-state rates ($31–41k)."),
 ]
 
 APPENDIX_BULLETS = [
@@ -74,6 +91,7 @@ APPENDIX_BULLETS = [
     "Small-n programs are merged: ECONMS + ECON4P1MS → Economics; DATASCIMS + QTMMS → Data Science; DEVPRACMDP + HUMANRTCRT → MDP.",
     "Annualization for peer comparison uses program-specific terms-per-year (from the Information Sheet plus empirical seasonal distribution) rather than a blanket 2-term assumption. This corrects a ~33% understatement for 3-term programs such as MDP and Data Science.",
     "Programs with zero kept scholarship (Data Science, MBID) are retained in the summary with a 0% discount rate — this is intentional and flags potential pricing discrepancies.",
+    "v2 pricing filter (df_pricing): avg gross/net tuition, discount rate, and peer benchmark exclude 11 of 493 student-program rows with total billed tuition under $20,000. These reflect single-course or partial-term billings with ~$0 scholarship that were depressing averages and compressing the gross-vs-net gap. Enrollment counts, international mix, and per-year trend charts continue to use the full population.",
 ]
 
 REPORT_SECTIONS = [
@@ -85,9 +103,9 @@ REPORT_SECTIONS = [
      ["charts/01_discount_rate_by_program.png", "charts/05_discount_rate_trend_by_program.png"]),
     ("Gross vs Net Tuition",
      ("Sticker price and net price diverge most sharply for MDP ($108k gross → $49k net) and Computer "
-      "Science ($66k → $33k). Programs with low or zero discount rates (Bioethics, Data Science, MBID) "
-      "collect close to full sticker from every student. Gross-to-net gap is the clearest single view of "
-      "where Emory is spending its tuition-discount dollars."),
+      "Science ($67k → $34k). Programs with low or zero discount rates (Bioethics, Data Science, MBID) "
+      "collect close to full sticker from every full-load student. Gross-to-net gap is the clearest "
+      "single view of where Emory is spending its tuition-discount dollars."),
      ["charts/02_avg_gross_vs_net_tuition.png"]),
     ("International Mix",
      ("Bubble size shows program enrollment; position shows international share vs discount rate. Computer "
@@ -103,12 +121,81 @@ REPORT_SECTIONS = [
       "sit below 10 students per year throughout the window."),
      ["charts/04_enrollment_trend_by_program.png"]),
     ("Peer Benchmarking",
-     ("Using the corrected program-specific annualization, Emory's gross tuition sits firmly mid-pack: "
-      "roughly $47–50k across Data/CS, Economics, and General program buckets. Columbia leads the peer set "
-      "at $65–91k depending on discipline, with NYU close behind. Georgia Tech's in-state rates ($31–41k) "
-      "undercut Emory in every bucket. The market splits into a high-tier (Columbia/NYU), a mid-tier (Emory), "
-      "and a value tier (Georgia Tech)."),
+     ("Using the corrected program-specific annualization applied to full-load students, Emory's gross "
+      "tuition sits firmly mid-pack: $47,353 Data/CS, $46,719 Economics, $50,654 General. Columbia leads "
+      "the peer set at $65–91k depending on discipline, with NYU close behind at ~$70–76k. Georgia Tech's "
+      "in-state rates ($31–41k) undercut Emory in every bucket. The market splits into a high-tier "
+      "(Columbia/NYU), a mid-tier (Emory), and a value tier (Georgia Tech)."),
      ["charts/06_peer_benchmark_emory_vs_peers.png"]),
+]
+
+# ------------------------------------------------------------------
+# Speaker notes (one section per slide in the deck)
+# ------------------------------------------------------------------
+SPEAKER_NOTES = [
+    ("Slide 1 — Title",
+     [
+         "Scope: Emory LGS master's programs, AY 2019 through AY 2026, 10 programs, 493 student-program enrollments.",
+         "This is the v2 cut: pricing metrics now exclude 11 partial-term rows under $20,000 in total billed tuition. Enrollment counts and the international mix still reflect the full 493.",
+     ]),
+    ("Slide 2 — Executive Summary",
+     [
+         "Lead with MDP: costliest program on both gross and net basis, and the single biggest absolute tuition give.",
+         "Flag Data Science (n=11) and MBID (n=8) as 0%-discount anomalies — obvious targets for a pricing review.",
+         "Bimodal enrollment: CS + MDP = 59% of the sample; this is a portfolio of two big programs plus a long tail.",
+         "High international share doesn't bring aid down — CS is 86% international AND ~49% discounted.",
+         "Emory is mid-pack: $47–51k annualized, below Columbia/NYU and above Georgia Tech's in-state rates.",
+     ]),
+    ("Slide 3 — Discount rate by program",
+     [
+         "Top: MDP 55%, CS 4+1 49.4%, Computer Science 49.2%. These three are the institutional-aid heavyweights.",
+         "Middle band: Math 41%, Economics 34%, Cancer Biology 4+1 26%.",
+         "Bottom: Bioethics 9.5% and Bioethics 4+1 16%; Data Science and MBID at 0%.",
+         "Uses the pricing filter (482 full-load students). Dropping the 11 sub-$20k rows barely moves any individual bar — the comparisons are robust to that choice — but it keeps the metric defensible.",
+     ]),
+    ("Slide 4 — Avg Gross vs Net Tuition",
+     [
+         "MDP is off the top: ~$108k gross, ~$49k net — ~$60k of institutional aid per student on average.",
+         "Computer Science: ~$67k gross, ~$34k net (v2 values are ~$1k higher than the v1 deck because the filter excluded four partial-term CS rows).",
+         "Bioethics moved the most under the filter: gross $54k → $57k, net $48k → $52k, because six low-billing rows were dropped.",
+         "MBID and Data Science: gross = net; the two bars are identical.",
+     ]),
+    ("Slide 5 — International % vs Discount Rate",
+     [
+         "Bubble size = enrollment; x = international %, y = discount rate.",
+         "CS is the big navy bubble upper-right: 86% international, 49% discount, 154 students.",
+         "No downward relationship between international share and aid — contradicts the intuition that international students subsidize domestic ones.",
+         "Uses the full population (no pricing filter) — we don't want to undercount international students on a count-based chart.",
+     ]),
+    ("Slide 6 — Enrollment Trends",
+     [
+         "Full panel, AY 2019 through AY 2026, full population.",
+         "Computer Science climbs from the mid-30s into the 60s — roughly doubled since 2022 — this is the main volume story.",
+         "MDP steady around 30–40 per year.",
+         "Smaller programs (Data Science, MBID, Economics) stay below ~10 per year throughout.",
+     ]),
+    ("Slide 7 — Discount Rate Trend",
+     [
+         "By-program, year-over-year. Shapes tell you stability; no program is systematically tightening or loosening aid.",
+         "MDP hovers at 55–60%. CS holds around 49%. 0%-discount programs stay flat at zero.",
+         "Year-to-year wobble sits within cohort-size noise; don't over-read single-year moves.",
+     ]),
+    ("Slide 8 — Peer Benchmark",
+     [
+         "Emory's three program-group averages on pricing-filtered data: Data/CS $47,353, Economics $46,719, General $50,654.",
+         "Columbia leads Data/CS at $64,800 and Economics at $90,732.",
+         "NYU sits in the $70,000–$75,750 range across buckets.",
+         "Georgia Tech in-state is the floor: $31,210–$41,390.",
+         "Positioning: Emory is priced like a mid-tier private — well above a public flagship, well below the urban elites. That's a deliberate pricing decision, not an accident.",
+         "Peer numbers are published sticker rates; Emory numbers use the pricing filter so the comparison is like-for-like against a typical full-load student.",
+     ]),
+    ("Slide 9 — Data & Methodology",
+     [
+         "Walk through the pipeline if asked: institutional Excel exports → decode term codes → filter to LGS programs → keep institutional-only scholarships → collapse to student-program level.",
+         "The sub-$20k pricing filter: 11 rows under $20,000 in total billed tuition were excluded from pricing metrics only. These are partial-term billings with ~$0 kept scholarship that distort averages.",
+         "Enrollment counts, international mix, and the per-year trend charts continue to run on the full 493 rows.",
+         "Scholarship filter strips federal/external awards (Pell, GRFP, Yellow Ribbon, etc.) so the discount rate reflects institutional aid only.",
+     ]),
 ]
 
 
@@ -219,6 +306,51 @@ def build_chart_slide(prs, insight, chart_path, page_num):
              str(page_num), color=NAVY, size=11, align=PP_ALIGN.RIGHT)
 
 
+def build_three_stack_slide(prs, headline, subtext, chart_paths, page_num):
+    """Slide with a left navy panel (headline + subtext) and three charts
+    stacked vertically on the right, each taking roughly equal vertical space."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    sw, sh = prs.slide_width, prs.slide_height
+
+    # Left navy panel (full height) + gold vertical accent.
+    panel_w = Inches(4.5)
+    add_rect(slide, 0, 0, panel_w, sh, NAVY)
+    add_rect(slide, panel_w, 0, Inches(0.06), sh, GOLD)
+
+    # Headline + subtext inside the panel.
+    add_text(
+        slide, Inches(0.4), Inches(1.0), panel_w - Inches(0.7), Inches(4.0),
+        headline, color=WHITE, size=20, bold=True, align=PP_ALIGN.LEFT,
+    )
+    add_text(
+        slide, Inches(0.4), Inches(5.4), panel_w - Inches(0.7), Inches(1.6),
+        subtext, color=GOLD, size=13, align=PP_ALIGN.LEFT,
+    )
+
+    # Right-side stack: equal vertical thirds.
+    right_x = panel_w + Inches(0.25)
+    right_w = sw - right_x - Inches(0.3)
+    top_pad = Inches(0.3)
+    bot_pad = Inches(0.5)  # leaves room for page number
+    avail_h = sh - top_pad - bot_pad
+    gap = Inches(0.08)
+    chart_h = (avail_h - gap * 2) / 3
+
+    for i, path in enumerate(chart_paths):
+        slide.shapes.add_picture(
+            path,
+            left=right_x,
+            top=top_pad + (chart_h + gap) * i,
+            width=right_w,
+            height=chart_h,
+        )
+
+    add_text(
+        slide, sw - Inches(0.8), sh - Inches(0.35), Inches(0.6), Inches(0.3),
+        str(page_num), color=NAVY, size=11, align=PP_ALIGN.RIGHT,
+    )
+
+
 def build_appendix_slide(prs):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     sw = prs.slide_width
@@ -254,8 +386,18 @@ def build_pptx(path: str) -> None:
 
     build_title_slide(prs)
     build_exec_summary_slide(prs)
-    for i, (insight, chart) in enumerate(CHART_SLIDES, start=3):
-        build_chart_slide(prs, insight, chart, i)
+    for i, entry in enumerate(CHART_SLIDES, start=3):
+        if entry is None:
+            build_three_stack_slide(
+                prs,
+                SEMESTER_SLIDE["headline"],
+                SEMESTER_SLIDE["subtext"],
+                SEMESTER_SLIDE["charts"],
+                i,
+            )
+        else:
+            insight, chart = entry
+            build_chart_slide(prs, insight, chart, i)
     build_appendix_slide(prs)
 
     prs.save(path)
@@ -454,10 +596,54 @@ def build_docx(path: str) -> None:
     print(f"  wrote {path}")
 
 
+def build_speaker_notes_docx(path: str) -> None:
+    """Per-slide talking points for the v2 deck."""
+    doc = Document()
+    style = doc.styles["Normal"]
+    style.font.name = "Calibri"
+    style.font.size = DocxPt(11)
+
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run("Speaker Notes — LGS Master's Programs Pricing Analysis")
+    r.font.name = "Calibri"
+    r.font.size = DocxPt(22)
+    r.font.bold = True
+    r.font.color.rgb = DOCX_NAVY
+
+    add_gold_rule(doc)
+
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = p.add_run(f"{SUBTITLE} · {REPORT_DATE}")
+    r.font.name = "Calibri"
+    r.font.size = DocxPt(13)
+    r.font.color.rgb = DOCX_GOLD
+
+    doc.add_paragraph()
+    add_body(
+        doc,
+        "One section per deck slide. v2 updates reflect the sub-$20k pricing "
+        "filter applied to df_pricing: 11 partial-term rows excluded from "
+        "discount-rate, gross-vs-net, and peer-benchmark metrics only. "
+        "Full population retained for enrollment counts and international mix.",
+    )
+
+    for slide_title, bullets in SPEAKER_NOTES:
+        add_heading(doc, slide_title, size=15)
+        for b in bullets:
+            add_bullet(doc, b)
+        doc.add_paragraph()
+
+    doc.save(path)
+    print(f"  wrote {path}")
+
+
 def main() -> None:
     os.makedirs("deliverables", exist_ok=True)
-    build_pptx("deliverables/emory_grad_pricing.pptx")
-    build_docx("deliverables/emory_grad_pricing_report.docx")
+    build_pptx("deliverables/emory_grad_pricing_v2.pptx")
+    build_docx("deliverables/emory_grad_pricing_report_v2.docx")
+    build_speaker_notes_docx("deliverables/emory_grad_pricing_speaker_notes_v2.docx")
 
 
 if __name__ == "__main__":
