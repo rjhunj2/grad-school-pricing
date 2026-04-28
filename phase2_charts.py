@@ -22,6 +22,40 @@ TERMS_PER_YEAR = {
     "DEVPRACMDP": 3, "HUMANRTCRT": 3, "BBS4P1MS": 3,
 }
 
+PROGRAM_MAP = {
+    "COMPSCIMS": "Computer Science",
+    "CS4P1MS":   "Computer Science 4+1",
+    "DATASCIMS": "Data Science",
+    "QTMMS":     "Data Science",
+    "ECONMS":    "Economics",
+    "ECON4P1MS": "Economics",
+    "MATHMS":    "Math",
+    "BIOETHMA":  "Bioethics",
+    "BIOETH4P1": "Bioethics 4+1",
+    "DEVPRACMDP":"MDP",
+    "HUMANRTCRT":"MDP",
+    "BMIDMS":    "MBID",
+    "BBS4P1MS":  "Cancer Biology 4+1",
+}
+
+# Mirrors keep_scholarship() in analysis.ipynb — LGS-only, drop external/federal
+# and generic LGS "special" awards.
+_SCH_EXCLUDE = [
+    "nih", "nsf", "grfp", "training grant", "special-scholarship",
+    "yellow ribbon", "vet", "americorps", "pell", "hope", "zell",
+    "woodruff scholar-grad tuition",
+]
+
+
+def _keep_scholarship(descr) -> bool:
+    if pd.isna(descr):
+        return False
+    d = str(descr).lower().strip()
+    if any(term in d for term in _SCH_EXCLUDE):
+        return False
+    return "lgs" in d
+
+
 PEER_DATA = pd.DataFrame([
     {"school": "Columbia",     "program_group": "Data/CS",   "tuition": 64800},
     {"school": "NYU",          "program_group": "Data/CS",   "tuition": 75750},
@@ -202,6 +236,110 @@ def chart_peer_benchmark(spl: pd.DataFrame, out: str) -> None:
     save(fig, out)
 
 
+def _build_semester_data(tuition_xlsx: str) -> pd.DataFrame:
+    """Per-(student, program, academic_year, semester) gross + scholarship.
+
+    Filtered to the df_pricing population (career-total tuition >= $20k at the
+    student-program grain) so partial-term billings don't drag the averages
+    down. Mirrors the cleaning rules in analysis.ipynb.
+    """
+    t = pd.read_excel(tuition_xlsx, sheet_name="Gross Tuition Billed to Student")
+    s = pd.read_excel(tuition_xlsx, sheet_name="Tuition Scholarship given to st")
+    t.columns = t.columns.str.strip()
+    s.columns = s.columns.str.strip()
+
+    t = t.rename(columns={
+        "Gross Tuition": "tuition",
+        "Acad Plan": "acad_plan",
+        "Item Term": "term_code",
+    })[["ID", "acad_plan", "term_code", "tuition"]].copy()
+    t["tuition"] = pd.to_numeric(t["tuition"], errors="coerce")
+    t = t.dropna(subset=["acad_plan", "tuition"])
+    t = t[t["acad_plan"].isin(PROGRAM_MAP)].copy()
+    t["term_code"] = t["term_code"].astype(int)
+    # Term code 5YYS: S = 1=Spring, 6=Summer, 9=Fall.
+    t["season_code"] = t["term_code"] % 10
+    # AY end-year: Fall rolls into next year (matches the scholarship sheet's Aid Yr).
+    t["academic_year"] = (2000 + (t["term_code"] // 10) % 100) + (t["season_code"] == 9).astype(int)
+    t["program"] = t["acad_plan"].map(PROGRAM_MAP)
+
+    # df_pricing population: career-total >= $20k at student-program grain.
+    career = t.groupby(["ID", "acad_plan"], as_index=False)["tuition"].sum()
+    keep = career[career["tuition"] >= 20000][["ID", "acad_plan"]]
+    t = t.merge(keep, on=["ID", "acad_plan"], how="inner")
+
+    # Tuition by (ID, plan, year, season). Scholarship comes from the per-season columns.
+    tuition_sem = (
+        t.groupby(["ID", "acad_plan", "program", "academic_year", "season_code"], as_index=False)
+        ["tuition"].sum()
+    )
+
+    s = s.rename(columns={
+        "Academic Plan": "acad_plan",
+        "Descr": "descr",
+        "Fall Tuition Scholarship": "fall_sch",
+        "Spring Tuiiton Scholarship": "spring_sch",
+        "Summer Tuition Scholarship": "summer_sch",
+        "Aid Yr": "academic_year",
+    })
+    for col in ["fall_sch", "spring_sch", "summer_sch"]:
+        s[col] = pd.to_numeric(s[col], errors="coerce").fillna(0)
+    s["academic_year"] = pd.to_numeric(s["academic_year"], errors="coerce").astype("Int64")
+    s = s[s["acad_plan"].isin(PROGRAM_MAP)].copy()
+    s = s[s["descr"].apply(_keep_scholarship)].copy()
+    sch_year = s.groupby(["ID", "acad_plan", "academic_year"], as_index=False)[
+        ["fall_sch", "spring_sch", "summer_sch"]
+    ].sum()
+
+    season_to_col = {9: "fall_sch", 1: "spring_sch", 6: "summer_sch"}
+    tuition_sem["scholarship"] = 0.0
+    for code, col in season_to_col.items():
+        mask = tuition_sem["season_code"] == code
+        m = tuition_sem.loc[mask].merge(
+            sch_year[["ID", "acad_plan", "academic_year", col]],
+            on=["ID", "acad_plan", "academic_year"], how="left",
+        )
+        tuition_sem.loc[mask, "scholarship"] = m[col].fillna(0).to_numpy()
+
+    tuition_sem["net_tuition"] = (tuition_sem["tuition"] - tuition_sem["scholarship"]).clip(lower=0)
+    return tuition_sem
+
+
+def chart_gross_vs_net_by_semester(sem_df: pd.DataFrame, season_label: str, season_code: int, out: str) -> None:
+    rows = sem_df[sem_df["season_code"] == season_code]
+    if rows.empty:
+        print(f"  skip {season_label}: no rows")
+        return
+    agg = (
+        rows.groupby("program", as_index=False)
+        .agg(
+            students=("ID", "nunique"),
+            avg_tuition=("tuition", "mean"),
+            avg_net_tuition=("net_tuition", "mean"),
+        )
+        .sort_values("avg_tuition", ascending=False)
+    )
+
+    x = range(len(agg))
+    w = 0.4
+    fig, ax = plt.subplots(figsize=(11, 6))
+    ax.bar([i - w / 2 for i in x], agg["avg_tuition"],     width=w, label="Avg Gross Tuition", color=NAVY)
+    ax.bar([i + w / 2 for i in x], agg["avg_net_tuition"], width=w, label="Avg Net Tuition",   color=GOLD)
+    ax.set_xticks(list(x))
+    ax.set_xticklabels(agg["program"], rotation=45, ha="right")
+    ax.set_ylabel("Amount per Semester ($)")
+    ax.set_title(
+        f"Average Gross vs Net Tuition by Program — {season_label}\n"
+        "(per-semester billing, df_pricing population)",
+        color=NAVY, fontweight="bold",
+    )
+    ax.legend()
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"${v:,.0f}"))
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    save(fig, out)
+
+
 def main() -> None:
     os.makedirs("charts", exist_ok=True)
 
@@ -226,6 +364,12 @@ def main() -> None:
     chart_enrollment_trend(spy,     "charts/04_enrollment_trend_by_program.png")
     chart_discount_trend(spy,       "charts/05_discount_rate_trend_by_program.png")
     chart_peer_benchmark(spl_pric,  "charts/06_peer_benchmark_emory_vs_peers.png")
+
+    sem = _build_semester_data("Tuition Data.xlsx")
+    print(f"  semester rows: {len(sem)} ({sem['ID'].nunique()} students)")
+    chart_gross_vs_net_by_semester(sem, "Fall",   9, "charts/gross_net_fall.png")
+    chart_gross_vs_net_by_semester(sem, "Spring", 1, "charts/gross_net_spring.png")
+    chart_gross_vs_net_by_semester(sem, "Summer", 6, "charts/gross_net_summer.png")
 
 
 if __name__ == "__main__":
