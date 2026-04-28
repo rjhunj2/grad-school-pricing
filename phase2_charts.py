@@ -305,20 +305,29 @@ def _build_semester_data(tuition_xlsx: str) -> pd.DataFrame:
     return tuition_sem
 
 
-def chart_gross_vs_net_by_semester(sem_df: pd.DataFrame, season_label: str, season_code: int, out: str) -> None:
+def chart_gross_vs_net_by_semester(
+    sem_df: pd.DataFrame,
+    season_label: str,
+    season_code: int,
+    out: str,
+    program_order: list[str] | None = None,
+) -> None:
     rows = sem_df[sem_df["season_code"] == season_code]
     if rows.empty:
         print(f"  skip {season_label}: no rows")
         return
-    agg = (
-        rows.groupby("program", as_index=False)
-        .agg(
-            students=("ID", "nunique"),
-            avg_tuition=("tuition", "mean"),
-            avg_net_tuition=("net_tuition", "mean"),
-        )
-        .sort_values("avg_tuition", ascending=False)
+    agg = rows.groupby("program", as_index=False).agg(
+        students=("ID", "nunique"),
+        avg_tuition=("tuition", "mean"),
+        avg_net_tuition=("net_tuition", "mean"),
     )
+    if program_order is not None:
+        # Keep only programs present in this semester, in the canonical order.
+        present = set(agg["program"])
+        ordered = [p for p in program_order if p in present]
+        agg = agg.set_index("program").loc[ordered].reset_index()
+    else:
+        agg = agg.sort_values("avg_tuition", ascending=False)
 
     x = range(len(agg))
     w = 0.4
@@ -367,9 +376,17 @@ def main() -> None:
 
     sem = _build_semester_data("Tuition Data.xlsx")
     print(f"  semester rows: {len(sem)} ({sem['ID'].nunique()} students)")
-    chart_gross_vs_net_by_semester(sem, "Fall",   9, "charts/gross_net_fall.png")
-    chart_gross_vs_net_by_semester(sem, "Spring", 1, "charts/gross_net_spring.png")
-    chart_gross_vs_net_by_semester(sem, "Summer", 6, "charts/gross_net_summer.png")
+    # Canonical program order: Fall avg gross descending. Applied to all three
+    # semester charts so the bars line up across Fall/Spring/Summer.
+    fall_order = (
+        sem[sem["season_code"] == 9]
+        .groupby("program")["tuition"].mean()
+        .sort_values(ascending=False)
+        .index.tolist()
+    )
+    chart_gross_vs_net_by_semester(sem, "Fall",   9, "charts/gross_net_fall.png",   program_order=fall_order)
+    chart_gross_vs_net_by_semester(sem, "Spring", 1, "charts/gross_net_spring.png", program_order=fall_order)
+    chart_gross_vs_net_by_semester(sem, "Summer", 6, "charts/gross_net_summer.png", program_order=fall_order)
 
 
 if __name__ == "__main__":
