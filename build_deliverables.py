@@ -91,6 +91,32 @@ TOP5 = [
      "Annualized gross tuition ~$47–51k across Data/CS, Economics, and General buckets — below Columbia/NYU ($65–91k) and above Georgia Tech's in-state rates ($31–41k)."),
 ]
 
+RECOMMENDATIONS = [
+    ("Audit Data Science & MBID scholarship eligibility",
+     "Both programs show 0% kept LGS scholarship across the 8-year panel "
+     "(Data Science n=11, MBID n=8). Reconcile the raw FA ledger against the "
+     "filtered scholarship feed to confirm whether this is a data anomaly or "
+     "a deliberate full-pay carve-out — and if deliberate, decide whether it "
+     "is costing yield against discounted peers."),
+    ("Review CS aid strategy relative to international demand",
+     "Computer Science is 86% international and still discounts ~49% per "
+     "student — the highest international share and one of the deepest "
+     "discounts in the portfolio. Test whether tighter aid materially shifts "
+     "yield given that Columbia/NYU charge $20–40k more in absolute terms."),
+    ("Capitalize on the peer pricing gap",
+     "Annualized gross tuition ($47–51k) sits well below Columbia/NYU "
+     "($65–91k) and clearly above Georgia Tech in-state ($31–41k). With CS "
+     "enrollment roughly doubling since 2022, demand is responding — modeling "
+     "selective sticker-price increases in the most-demanded programs (CS, "
+     "MDP) is the lowest-risk revenue lever."),
+    ("Stabilize MDP discount rate with a formal aid policy",
+     "MDP discounts at 55% career-wide and concentrates the give in Summer "
+     "(~$22k gross → ~$2k net per Summer term). Year-to-year the rate drifts "
+     "in a 55–60% band, which suggests the practice is implicit. Codify the "
+     "rule (eligibility, award size, term distribution) so future cohorts are "
+     "predictable and the rate can be tuned deliberately rather than by drift."),
+]
+
 APPENDIX_BULLETS = [
     "Source data: institutional Excel exports of gross tuition billed and LGS scholarship awards; 8-year panel spanning AY 2019 through AY 2026.",
     "Net tuition is clipped at zero. In rare cases a kept scholarship exceeds billed tuition for a partial-term student; we report that student as paying $0 rather than a negative amount.",
@@ -163,6 +189,50 @@ REPORT_SECTIONS = [
       "in-state rates ($31–41k) undercut Emory in every bucket. The market splits into a high-tier "
       "(Columbia/NYU), a mid-tier (Emory), and a value tier (Georgia Tech)."),
      ["charts/06_peer_benchmark_emory_vs_peers.png"]),
+    {
+        "title": "Recommendations",
+        "intro": (
+            "Four pricing-strategy questions emerge from the analysis. Each is scoped to be "
+            "actionable by LGS leadership in a single review cycle: a data audit, an aid-strategy "
+            "review, a sticker-price test, and a policy codification."
+        ),
+        "subsections": [
+            ("6.1 — Audit Data Science & MBID scholarship eligibility",
+             "Both programs show 0% kept LGS scholarship across the 8-year panel (Data Science "
+             "n=11, MBID n=8). Either the awards are not being made or they are landing under "
+             "descriptions excluded by the LGS-only filter. A manual reconciliation against the "
+             "raw FA ledger confirms which it is. If the absence of aid is genuine, decide "
+             "whether it reflects an intentional full-pay positioning or an oversight that is "
+             "costing yield against more aggressively discounted peer programs.",
+             None),
+            ("6.2 — Review CS aid strategy relative to international demand",
+             "Computer Science is 86% international and still discounts ~49% per student — the "
+             "highest international share and one of the deepest discounts in the LGS portfolio. "
+             "There is no inverse relationship between international share and aid in the data, "
+             "which contradicts the common assumption that international students subsidize "
+             "domestic ones. The strategic question is whether the 49% discount is necessary to "
+             "land these students given that Columbia and NYU charge $20–40k more in absolute "
+             "terms; a yield-elasticity test on the next admit cycle would quantify the lift per "
+             "aid dollar.",
+             None),
+            ("6.3 — Capitalize on the peer pricing gap",
+             "Annualized gross tuition sits comfortably below Columbia and NYU ($65–91k) and "
+             "clearly above Georgia Tech's in-state floor ($31–41k). With CS enrollment roughly "
+             "doubling since 2022, demand for Emory's mid-tier positioning is responding. A "
+             "selective sticker-price increase of $5–8k in the most-demanded programs (CS, MDP) "
+             "would still leave Emory comfortably below the urban-elite tier and would generate "
+             "meaningful incremental revenue without changing market position.",
+             None),
+            ("6.4 — Stabilize MDP discount rate with a formal aid policy",
+             "MDP discounts at 55% career-wide — the highest in the portfolio — and the per-"
+             "semester view shows the give is concentrated in Summer ($22k gross → $2.3k net). "
+             "Year-to-year the program rate hovers in a 55–60% band, which suggests the practice "
+             "is implicit rather than codified. Document the decision rule (eligibility, award "
+             "size, term distribution) so future cohorts are predictable and so the rate can be "
+             "tuned deliberately rather than by drift.",
+             None),
+        ],
+    },
 ]
 
 # ------------------------------------------------------------------
@@ -251,7 +321,24 @@ SPEAKER_NOTES = [
          "Positioning: Emory is priced like a mid-tier private — well above a public flagship, well below the urban elites. That's a deliberate pricing decision, not an accident.",
          "Peer numbers are published sticker rates; Emory numbers use the pricing filter so the comparison is like-for-like against a typical full-load student.",
      ]),
-    ("Slide 11 — Data & Methodology",
+    {
+        "title": "Slide 11 — Recommendations",
+        "what_to_say_paragraphs": [
+            "Frame this slide as the bridge from analysis to action. We've spent eight slides describing what the data says — these four items are what we'd actually do about it. They're scoped so LGS leadership could action all four in a single review cycle: one data audit, one aid-strategy review, one sticker-price test, and one policy codification.",
+            "Recommendation 01 is the lowest-effort, highest-clarity item: Data Science and MBID both show literal-zero LGS scholarship across the entire 8-year panel. That is either a data-feed problem (awards are being made under descriptions our filter excludes) or it's a real pricing carve-out. We don't yet know which. A manual reconciliation against the raw FA ledger is a few hours of work and either way it changes the conversation.",
+            "Recommendation 02 is the biggest dollar lever in the portfolio. Computer Science is 86% international and still gets ~49% off. The intuition that international students subsidize domestic ones simply doesn't show up in this data. Worth a yield-elasticity test on the next admit cycle to find out how much aid is actually buying us in conversion.",
+            "Recommendation 03 is the upside case. Emory's $47–51k annualized sits $20–40k below Columbia and NYU. CS enrollment has roughly doubled since 2022 — the demand signal is there. A modest sticker increase in CS and MDP keeps us comfortably below the urban-elite tier and generates real revenue without repositioning the brand.",
+            "Recommendation 04 is governance, not pricing. MDP's 55% discount rate is real and it's stable, but it isn't written down anywhere. That's how rates drift. Document the rule and the rate becomes a deliberate decision rather than an artifact.",
+        ],
+        "key_bullets": [
+            "01 — Data audit. Cheapest item, biggest fact-check value.",
+            "02 — CS aid review is the largest dollar conversation in the portfolio.",
+            "03 — Sticker-price test is the lowest-risk revenue lever; CS/MDP are the obvious candidates.",
+            "04 — MDP policy codification is governance work, not a pricing change.",
+        ],
+        "tip": "If you have time for only one rec in the room, lead with 02 — the CS aid question is where the conversation will gravitate anyway, and it's where the largest dollars are. 01 is a quick credibility win to set up before the bigger discussions.",
+    },
+    ("Slide 12 — Data & Methodology",
      [
          "Walk through the pipeline if asked: institutional Excel exports → decode term codes → filter to LGS programs → keep institutional-only scholarships → collapse to student-program level.",
          "The sub-$20k pricing filter: 11 rows under $20,000 in total billed tuition were excluded from pricing metrics only. These are partial-term billings with ~$0 kept scholarship that distort averages.",
@@ -411,6 +498,58 @@ def build_left_panel_chart_slide(prs, headline, subtext, chart_path, page_num):
     )
 
 
+def build_recommendations_slide(prs, page_num):
+    """Full-bleed navy slide with four gold-numbered recommendation badges."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    sw, sh = prs.slide_width, prs.slide_height
+
+    add_rect(slide, 0, 0, sw, sh, NAVY)
+    add_text(slide, Inches(0.6), Inches(0.4), sw - Inches(1.2), Inches(0.7),
+             "Recommendations", color=GOLD, size=30, bold=True)
+    add_rect(slide, Inches(0.6), Inches(1.15), Inches(1.5), Inches(0.06), GOLD)
+
+    block_h = Inches(1.4)
+    start_y = Inches(1.55)
+    badge_d = Inches(0.95)
+    text_left = Inches(2.0)
+    text_right_margin = Inches(0.6)
+
+    for i, (headline, body) in enumerate(RECOMMENDATIONS):
+        y = start_y + block_h * i
+
+        badge = slide.shapes.add_shape(
+            MSO_SHAPE.OVAL, Inches(0.7), y + Inches(0.15), badge_d, badge_d,
+        )
+        badge.fill.solid()
+        badge.fill.fore_color.rgb = GOLD
+        badge.line.fill.background()
+        tf = badge.text_frame
+        tf.margin_left = tf.margin_right = Inches(0.0)
+        tf.margin_top = tf.margin_bottom = Inches(0.0)
+        p = tf.paragraphs[0]
+        p.alignment = PP_ALIGN.CENTER
+        run = p.add_run()
+        run.text = f"{i + 1:02d}"
+        run.font.name = "Calibri"
+        run.font.size = Pt(24)
+        run.font.bold = True
+        run.font.color.rgb = NAVY
+
+        add_text(
+            slide, text_left, y + Inches(0.1), sw - text_left - text_right_margin, Inches(0.45),
+            headline, color=GOLD, size=16, bold=True,
+        )
+        add_text(
+            slide, text_left, y + Inches(0.55), sw - text_left - text_right_margin, Inches(0.85),
+            body, color=WHITE, size=11,
+        )
+
+    add_text(
+        slide, sw - Inches(0.8), sh - Inches(0.35), Inches(0.6), Inches(0.3),
+        str(page_num), color=GOLD, size=11, align=PP_ALIGN.RIGHT,
+    )
+
+
 def build_appendix_slide(prs):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     sw = prs.slide_width
@@ -454,6 +593,7 @@ def build_pptx(path: str) -> None:
         else:
             insight, chart = entry
             build_chart_slide(prs, insight, chart, i)
+    build_recommendations_slide(prs, page_num=3 + len(CHART_SLIDES))
     build_appendix_slide(prs)
 
     prs.save(path)
@@ -644,9 +784,10 @@ def build_docx(path: str) -> None:
             for sub_title, sub_narrative, sub_chart in entry["subsections"]:
                 add_heading(doc, sub_title, size=14)
                 add_body(doc, sub_narrative)
-                doc.add_picture(sub_chart, width=DocxInches(6.5))
-                cap = doc.paragraphs[-1]
-                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                if sub_chart:
+                    doc.add_picture(sub_chart, width=DocxInches(6.5))
+                    cap = doc.paragraphs[-1]
+                    cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
             _page_break(doc)
         else:
             title, narrative, charts = entry
@@ -734,8 +875,16 @@ def build_speaker_notes_docx(path: str) -> None:
         if isinstance(entry, dict):
             add_heading(doc, entry["title"], size=15)
             add_subheading(doc, "What to say")
-            for b in entry["what_to_say"]:
-                add_bullet(doc, b)
+            if "what_to_say_paragraphs" in entry:
+                for para in entry["what_to_say_paragraphs"]:
+                    add_body(doc, para)
+            else:
+                for b in entry["what_to_say"]:
+                    add_bullet(doc, b)
+            if "key_bullets" in entry:
+                add_subheading(doc, "Key points")
+                for b in entry["key_bullets"]:
+                    add_bullet(doc, b)
             add_tip_box(doc, entry["tip"])
         else:
             slide_title, bullets = entry
