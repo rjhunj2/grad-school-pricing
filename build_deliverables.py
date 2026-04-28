@@ -15,6 +15,7 @@ from docx.oxml.ns import qn
 from docx.shared import Inches as DocxInches
 from docx.shared import Pt as DocxPt
 from docx.shared import RGBColor as DocxRGB
+from PIL import Image
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
@@ -62,8 +63,11 @@ CHART_SLIDES = [
         "subtext":  SEMESTER_SUBTEXT,
         "chart":    "charts/gross_net_summer.png",
     },
-    ("High international share doesn't come with lower aid — Computer Science is 86% international AND 49% discounted",
-     "charts/03_intl_pct_vs_discount_rate.png"),
+    {
+        "headline": "High international share doesn't come with lower aid — CS is 86% international and 49% discounted",
+        "subtext":  "Full population (n=487). Bubble size = enrollment; x-axis on log scale to spread the cluster of programs near 0%.",
+        "chart":    "charts/03_intl_pct_vs_discount_rate.png",
+    },
     ("Computer Science enrollment has roughly doubled since 2022 — driving nearly all of Emory's LGS master's volume growth",
      "charts/04_enrollment_trend_by_program.png"),
     ("Discount rates are broadly stable year-over-year — no program is systematically tightening aid",
@@ -474,20 +478,21 @@ def build_left_panel_chart_slide(prs, headline, subtext, chart_path, page_num):
         subtext, color=GOLD, size=13, align=PP_ALIGN.LEFT,
     )
 
-    # Right-side chart, width-fit (preserves the source PNG's 11:6 aspect ratio).
+    # Right-side chart, fit to the available area while preserving aspect.
     right_x = panel_w + Inches(0.25)
     right_w = sw - right_x - Inches(0.3)
     avail_top = Inches(0.3)
     avail_bot = Inches(0.5)
     avail_h = sh - avail_top - avail_bot
-    # Source charts are figsize=(11, 6).
-    chart_h_natural = right_w * 6 / 11
+    with Image.open(chart_path) as im:
+        img_w_px, img_h_px = im.size
+    chart_h_natural = right_w * img_h_px / img_w_px
     if chart_h_natural <= avail_h:
         chart_w = right_w
         chart_h = chart_h_natural
     else:
         chart_h = avail_h
-        chart_w = chart_h * 11 / 6
+        chart_w = chart_h * img_w_px / img_h_px
     chart_x = right_x + (right_w - chart_w) / 2
     chart_y = avail_top + (avail_h - chart_h) / 2
     slide.shapes.add_picture(chart_path, left=chart_x, top=chart_y, width=chart_w, height=chart_h)

@@ -116,19 +116,43 @@ def chart_gross_vs_net(ps: pd.DataFrame, out: str) -> None:
 
 
 def chart_intl_vs_discount(ps: pd.DataFrame, out: str) -> None:
-    fig, ax = plt.subplots(figsize=(10, 7))
-    sizes = ps["students"] * 10
+    fig, ax = plt.subplots(figsize=(14, 9))
+    sizes = ps["students"] * 16
     ax.scatter(
         ps["intl_pct"], ps["discount_rate"],
         s=sizes, color=NAVY, alpha=0.6,
         edgecolors=GOLD, linewidths=2,
     )
+
+    # MBID and Data Science both sit at (0%, 0%) — nudge labels apart in y so
+    # they don't print on top of each other.
+    label_y_nudge = {"MBID": 1.5, "Data Science": -1.5}
     for _, r in ps.iterrows():
-        ax.annotate(
-            f"{r['program']} (n={r['students']})",
-            (r["intl_pct"], r["discount_rate"]),
-            xytext=(7, 7), textcoords="offset points", fontsize=9,
-        )
+        dy = label_y_nudge.get(r["program"], 0.0)
+        if dy != 0.0:
+            ax.annotate(
+                f"{r['program']} (n={r['students']})",
+                xy=(r["intl_pct"], r["discount_rate"]),
+                xytext=(r["intl_pct"], r["discount_rate"] + dy),
+                textcoords="data", fontsize=10,
+                ha="left", va="center",
+            )
+        else:
+            ax.annotate(
+                f"{r['program']} (n={r['students']})",
+                (r["intl_pct"], r["discount_rate"]),
+                xytext=(8, 8), textcoords="offset points", fontsize=10,
+            )
+
+    # Symlog spreads out the cluster of programs near 0% intl share while still
+    # showing zero. Linthresh=1 keeps the 0-1% region linear.
+    ax.set_xscale("symlog", linthresh=1)
+    ticks = [0, 1, 2, 5, 10, 20, 40, 80]
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([str(t) for t in ticks])
+    ax.set_xlim(-0.4, 110)
+    ax.set_ylim(-4, 62)
+
     ax.set_xlabel("International Students (%)")
     ax.set_ylabel("Discount Rate (%)")
     ax.set_title("International % vs Discount Rate\n(bubble size = enrollment)", color=NAVY, fontweight="bold")
